@@ -1,19 +1,26 @@
 {
-    "name": "c9.ide.newresource",
-    "description": "The repository for c9.ide.newresource, a Cloud9 core plugin",
-    "version": "3.0.0",
-    "author": "Cloud9",
-    "contributors": [],
+    "name": "snlab.devopen.newresource",
+    "description": "A plugin for DevOpen IDE (and, in turn, Cloud9 IDE).",
+    "author": "SNLab",
+    "contributors": [
+        {
+            "name": "H. May Wang",
+            "email": "whr.hr.r@gmail.com"
+        },
+        {
+            "name": "J. Jensen Zhang",
+            "email": "jingxuan.n.zhang@gmail.com"
+        }
+    ],
     "repository": {
         "type": "git",
-        "url": "http://github.com/c9/c9.ide.newresource.git"
+        "url": "http://github.com/snlab/snlab.devopen.newresource.git"
     },
     "plugins": {
-        "templatereSource": {},
-        "open": {}
+        "newresource": {}
     },
     "categories": [
-        "core"
+        "miscellaneous"
     ],
     "licenses": [
         "MIT"
