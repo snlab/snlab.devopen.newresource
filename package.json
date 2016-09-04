@@ -1,28 +1,28 @@
 {
-    "name": "snlab.devopen.newresource",
-    "description": "A plugin for DevOpen IDE (and, in turn, Cloud9 IDE).",
-    "author": "SNLab",
-    "contributors": [
-        {
-            "name": "H. May Wang",
-            "email": "whr.hr.r@gmail.com"
-        },
-        {
-            "name": "J. Jensen Zhang",
-            "email": "jingxuan.n.zhang@gmail.com"
-        }
-    ],
-    "repository": {
-        "type": "git",
-        "url": "http://github.com/snlab/snlab.devopen.newresource.git"
+  "name": "snlab.devopen.newresource",
+  "description": "A plugin for DevOpen IDE (and, in turn, Cloud9 IDE).",
+  "author": "SNLab",
+  "contributors": [
+    {
+      "name": "H. May Wang",
+      "email": "whr.hr.r@gmail.com"
     },
-    "plugins": {
-        "newresource": {}
-    },
-    "categories": [
-        "miscellaneous"
-    ],
-    "licenses": [
-        "MIT"
-    ]
+    {
+      "name": "J. Jensen Zhang",
+      "email": "jingxuan.n.zhang@gmail.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/snlab/snlab.devopen.newresource.git"
+  },
+  "plugins": {
+    "newresource": {}
+  },
+  "categories": [
+    "miscellaneous"
+  ],
+  "licenses": [
+    "MIT"
+  ]
 }
