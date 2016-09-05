@@ -97,11 +97,11 @@ define(function(require, exports, module) {
       return path;
     }
 
-    function newFile(type, value, path) {
+    function newFile(type, value, path, name) {
       if (readonly) return;
 
       var filePath;
-      var name = "Untitled";
+      var name = name || "Untitled";
       var count = 1;
       type = type || "";
       path = path || getDirPath();
@@ -151,7 +151,7 @@ define(function(require, exports, module) {
         },
         {
           title: "Package",
-          name: "fastpackage",
+          name: "package",
           type: "textbox",
           defaultValue: "fast.simple.test"
           // margin: "20 20 5 20",
@@ -166,24 +166,18 @@ define(function(require, exports, module) {
       ]
     });
 
-    function createFastProject(){
-      var jsonForm = templateform.toJson();
-      var projectname = jsonForm.projectname;
-      var version = jsonForm.version;
-      var fastpackage = jsonForm.fastpackage;
-      var classprefix = jsonForm.classprefix;
-
+    function createFastProject(args){
       proc.spawn("mvn", {
         args: [
           "archetype:generate",
-          "-DarchetypeGroupId=test.fast",
+          "-DarchetypeGroupId=fast",
           "-DarchetypeArtifactId=fast-app-archetype",
           "-DarchetypeVersion=1.0.0-SNAPSHOT",
           "-DgroupId=fast.app",
-          "-DartifactId=" + projectname,
-          "-Dversion=" + version,
-          "-Dpackage=" + fastpackage,
-          "-DclassPrefix=" + classprefix,
+          "-DartifactId=" + args.projectname,
+          "-Dversion=" + args.version,
+          "-Dpackage=" + args.package,
+          "-DclassPrefix=" + args.classprefix,
           "-Dcopyright=SNLab",
           "-DcopyrightYear=2016",
           "-DinteractiveMode=false"
@@ -217,7 +211,7 @@ define(function(require, exports, module) {
           caption: "OK",
           default: true,
           onclick: function(){
-            createFastProject();
+            createFastProject(templateform.toJson());
             fastDialog.hide();
           }
         }
@@ -249,8 +243,34 @@ define(function(require, exports, module) {
     });
 
     function createFastFunction(args) {
-      // TODO: create a FAST Function
-      alert("package:" + args.package + "\nname:" + args.name);
+      var content = "/*\n" +
+            " * Copyright © 2016 SNLab and others.  All rights reserved.\n" +
+            " *\n" +
+            " * This program and the accompanying materials are made available under the\n" +
+            " * terms of the Eclipse Public License v1.0 which accompanies this distribution,\n" +
+            " * and is available at http://www.eclipse.org/legal/epl-v10.html\n" +
+            " */\n" +
+            "\n" +
+            "package \n" + args.package + ";" +
+            "\n" +
+            "import fast.api.FastDataStore;\n" +
+            "import fast.api.Function;\n" +
+            "\n" +
+            "public class \n" + args.name + " implements Function {" +
+            "\n" +
+            "    private FastDataStore datastore = null;\n" +
+            "\n" +
+            "    public void init(FastDataStore datastore) {\n" +
+            "        this.datastore = datastore;\n" +
+            "    }\n" +
+            "\n" +
+            "    public void run() {\n" +
+            "        /*\n" +
+            "         * Implement your control logic here.\n" +
+            "         * */\n" +
+            "    }\n" +
+            "}";
+      newFile(".java", content, getDirPath(), args.name);
     }
 
     var functionDialog = new Dialog("functionDialog", main.consumes, {
