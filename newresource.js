@@ -142,14 +142,6 @@ define(function(require, exports, module) {
       ]
     });
 
-    // var progressDialog = new Dialog("snlab.org", main.consumes, {
-    //   name: "show-operation-progress",
-    //   allowClose: false,
-    //   modal: true,
-    //   title: "Maven Archetype Generating",
-    //   body: "<p>Wait for your project created.</p><p>Here should show a progress bar.</p>"
-    // });
-
     var loaded = false;
     function load(callback) {
       if (loaded) return false;
@@ -185,10 +177,10 @@ define(function(require, exports, module) {
         disabled: readonly
       }), 200, plugin);
       menus.addItemByPath("File/New/Empty FAST Project", new ui.item({
-        disabled: readonly
+        command: "fastproject"
       }), 210, plugin);
       menus.addItemByPath("File/New/FAST Example Project", new ui.item({
-        command: "fastproject"
+        disabled: readonly
       }), 220, plugin);
       menus.addItemByPath("File/New/~", new ui.divider(), 250, plugin);
       menus.addItemByPath("File/New/FAST Function", new ui.item({
@@ -254,27 +246,29 @@ define(function(require, exports, module) {
     }
 
     function mavenArchetypeGenerator(archetype, args) {
+
       proc.spawn("mvn", {
         args: [
           "archetype:generate",
           "-DarchetypeGroupId=" + archetype.groupId,
           "-DarchetypeArtifactId=" + archetype.artifactId,
           "-DarchetypeVersion=" + archetype.version,
+          "-DinteractiveMode=false"
+        ].concat(
           Object.keys(args).map(function(key) {
             return "-D" + key + "=" + args[key];
-          }).join(' '),
-          "-DinteractiveMode=false"
-        ],
+          })
+        ),
         cwd: c9.workspaceDir
       }, function(err, process) {
         // TODO: Feedback the error to user explicitly
         if (err) throw err;
-        // TODO: Popup a dialog to report the generation progress in real time
         progress.show();
         process.stdout.on("data", function(chunk) {
           progress.update(chunk);
           console.log(chunk);
         }).on("end", function() {
+          // TODO: report error if generation failed
           progress.hide();
         });
       });
@@ -282,10 +276,13 @@ define(function(require, exports, module) {
 
     function createFastProject(args){
       mavenArchetypeGenerator(FAST_ARCHETYPE, {
+        groupId: "fast.app",
         artifactId: args.projectname,
         version: args.version,
         package: args.package,
-        classPrefix: args.classprefix
+        classPrefix: args.classprefix,
+        copyright: "SNLab",
+        copyrightYear: "2016"
       });
     }
 
