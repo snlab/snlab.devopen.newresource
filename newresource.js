@@ -271,6 +271,7 @@ define(function(require, exports, module) {
           // TODO: report error if generation failed
           progress.hide();
         });
+        // TODO: handle process crash
       });
     }
 
@@ -287,33 +288,11 @@ define(function(require, exports, module) {
     }
 
     function createFastFunction(args) {
-      var content = "/*\n" +
-            " * Copyright © 2016 SNLab and others.  All rights reserved.\n" +
-            " *\n" +
-            " * This program and the accompanying materials are made available under the\n" +
-            " * terms of the Eclipse Public License v1.0 which accompanies this distribution,\n" +
-            " * and is available at http://www.eclipse.org/legal/epl-v10.html\n" +
-            " */\n" +
-            "\n" +
-            "package \n" + args.package + ";" +
-            "\n" +
-            "import fast.api.FastDataStore;\n" +
-            "import fast.api.Function;\n" +
-            "\n" +
-            "public class \n" + args.name + " implements Function {" +
-            "\n" +
-            "    private FastDataStore datastore = null;\n" +
-            "\n" +
-            "    public void init(FastDataStore datastore) {\n" +
-            "        this.datastore = datastore;\n" +
-            "    }\n" +
-            "\n" +
-            "    public void run() {\n" +
-            "        /*\n" +
-            "         * Implement your control logic here.\n" +
-            "         * */\n" +
-            "    }\n" +
-            "}";
+      var content = require("text!./template/function.template")
+            .replace(/\${copyrightYear}/g, args.copyrightYear || "2016")
+            .replace(/\${copyright}/g, args.copyright || "SNLab")
+            .replace(/\${classPrefix}/g, args.name)
+            .replace(/\${package}/g, args.package);
       newFile(".java", content, getDirPath(), args.name);
     }
 
