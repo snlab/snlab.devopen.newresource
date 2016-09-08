@@ -1,0 +1,62 @@
+.progress-container {
+  width: 100%;
+  margin: 0 auto;
+
+}
+
+.bar-unfill {
+  height: 15px;
+  display: block;
+  background: #fff;
+  width: 100%;
+  border-radius: 8px;
+  margin: 10px auto;
+
+}
+
+.bar-fill-stripes {
+  height: 15px;
+  display: block;
+  background: #45c9a5;
+  width: 0;
+  border-radius: 8px;
+  background-image: linear-gradient(-45deg,rgba(255,255,255,.2) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.2) 50%,rgba(255,255,255,.2) 75%,transparent 75%,transparent);
+  -webkit-transition: width .8s ease;
+  -moz-transition: width .8s ease;
+  transition: width .8s ease;
+  -webkit-animation: progressbar 7s infinite;
+  animation: progressbar 7s infinite
+
+}
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes progressbar {
+  from {
+    width: 0
+            
+  }
+  to {
+    width: 100%
+            
+  }
+
+}
+/* Standard syntax */
+@keyframes progressbar {
+  from {
+    width: 0
+            
+  }
+  to {
+    width: 100%
+            
+  }
+
+}
+
+.progress-container textarea {
+  resize: none;
+  overflow: auto;
+  background: #000;
+  color: #fff;
+}

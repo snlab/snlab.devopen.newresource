@@ -2,7 +2,7 @@ define(function(require, exports, module) {
   "use strict";
 
   main.consumes = [
-    "Plugin", "c9", "ui", "menus", "tabManager", "commands", "tree", "Form", "Dialog", "proc", "Divider", "dialog.alert"
+    "Plugin", "c9", "ui", "menus", "tabManager", "commands", "tree", "Form", "Dialog", "proc", "Divider", "dialog.alert", "dialog.progress"
   ];
   main.provides = ["newresource"];
   return main;
@@ -20,6 +20,14 @@ define(function(require, exports, module) {
     var proc = imports.proc;
     var Divider = imports.Divider;
     var alert = imports["dialog.alert"].show;
+    var progress= imports["dialog.progress"];
+
+    /***** Constants *****/
+    var FAST_ARCHETYPE = {
+      groupId: "fast",
+      artifactId: "fast-app-archetype",
+      version: "1.0.0-SNAPSHOT"
+    };
 
     /***** Initialization *****/
 
@@ -27,6 +35,120 @@ define(function(require, exports, module) {
 
     var readonly = c9.readonly;
     var defaultExtension = "";
+
+    var templateform = new Form({
+      rowheight: 40,
+      colwidth: 100,
+      edge: "5 5 10 5",
+      form:[
+        {
+          title: "Project name",
+          name: "projectname",
+          type: "textbox",
+          defaultValue: "simple-test"
+        },
+        {
+          title: "Version",
+          name: "version",
+          type: "textbox",
+          defaultValue: "1.0.0-SNAPSHOT"
+        },
+        {
+          title: "Package",
+          name: "package",
+          type: "textbox",
+          defaultValue: "fast.simple.test"
+        },
+        {
+          title: "Class prefix",
+          name: "classprefix",
+          type: "textbox",
+          defaultValue: "FastSimpleTest"
+        }
+      ]
+    });
+
+    var fastDialog = new Dialog("snlab.org", main.consumes, {
+      name: "create-a-fast-project",
+      allowClose: true,
+      title: "Create a FAST project",
+      elements: [
+        {
+          type: "button",
+          id: "cancel",
+          color: "grey",
+          caption: "Cancel",
+          hotkey: "ESC",
+          onclick: function(){ fastDialog.hide(); }
+        },
+        {
+          type: "button",
+          id: "ok",
+          color: "green",
+          caption: "OK",
+          default: true,
+          onclick: function(){
+            createFastProject(templateform.toJson());
+            fastDialog.hide();
+          }
+        }
+      ]
+    });
+
+    var functionform = new Form({
+      rowheight: 40,
+      colwidth: 100,
+      edge: "5 5 10 5",
+      form:[
+        {
+          title: "Package",
+          name: "package",
+          type: "textbox",
+          defaultValue: "fast.app"
+        },
+        {
+          title: "Function Name",
+          name: "name",
+          type: "textbox",
+          defaultValue: "MyFunction"
+        },
+      ]
+    });
+
+    var functionDialog = new Dialog("snlab.org", main.consumes, {
+      name: "create-a-fast-funciton",
+      allowClose: true,
+      title: "Create a FAST Function",
+      elements: [
+        {
+          type: "button",
+          id: "cancel",
+          color: "grey",
+          caption: "Cancel",
+          hotkey: "ESC",
+          onclick: function(){ functionDialog.hide(); }
+        },
+        {
+          type: "button",
+          id: "ok",
+          color: "green",
+          caption: "OK",
+          default: true,
+          onclick: function(){
+            createFastFunction(functionform.toJson());
+            functionDialog.hide();
+          }
+        }
+      ]
+    });
+
+    // var progressDialog = new Dialog("snlab.org", main.consumes, {
+    //   name: "show-operation-progress",
+    //   allowClose: false,
+    //   modal: true,
+    //   title: "Maven Archetype Generating",
+    //   body: "<p>Wait for your project created.</p><p>Here should show a progress bar.</p>"
+    // });
 
     var loaded = false;
     function load(callback) {
@@ -80,6 +202,7 @@ define(function(require, exports, module) {
         command: "mapletemplate"
       }), 340, plugin);
 
+      return loaded;
     }
 
     /***** Methods *****/
@@ -130,117 +253,41 @@ define(function(require, exports, module) {
       tree.createFolder(path, false, callback || function(){});
     }
 
-    var templateform = new Form({
-      rowheight: 40,
-      colwidth: 100,
-      edge: "5 5 10 5",
-      form:[
-        {
-          title: "Project name",
-          name: "projectname",
-          type: "textbox",
-          defaultValue: "simple-test",
-          // margin: "20 20 5 20",
-        },
-        {
-          title: "Version",
-          name: "version",
-          type: "textbox",
-          defaultValue: "1.0.0-SNAPSHOT"
-          // margin: "20 20 5 20",
-        },
-        {
-          title: "Package",
-          name: "package",
-          type: "textbox",
-          defaultValue: "fast.simple.test"
-          // margin: "20 20 5 20",
-        },
-        {
-          title: "Class prefix",
-          name: "classprefix",
-          type: "textbox",
-          defaultValue: "FastSimpleTest"
-          // margin: "20 20 5 20",
-        }
-      ]
-    });
-
-    function createFastProject(args){
+    function mavenArchetypeGenerator(archetype, args) {
       proc.spawn("mvn", {
         args: [
           "archetype:generate",
-          "-DarchetypeGroupId=fast",
-          "-DarchetypeArtifactId=fast-app-archetype",
-          "-DarchetypeVersion=1.0.0-SNAPSHOT",
-          "-DgroupId=fast.app",
-          "-DartifactId=" + args.projectname,
-          "-Dversion=" + args.version,
-          "-Dpackage=" + args.package,
-          "-DclassPrefix=" + args.classprefix,
-          "-Dcopyright=SNLab",
-          "-DcopyrightYear=2016",
+          "-DarchetypeGroupId=" + archetype.groupId,
+          "-DarchetypeArtifactId=" + archetype.artifactId,
+          "-DarchetypeVersion=" + archetype.version,
+          Object.keys(args).map(function(key) {
+            return "-D" + key + "=" + args[key];
+          }).join(' '),
           "-DinteractiveMode=false"
         ],
         cwd: c9.workspaceDir
-      }, function(err, process){
+      }, function(err, process) {
+        // TODO: Feedback the error to user explicitly
         if (err) throw err;
+        // TODO: Popup a dialog to report the generation progress in real time
+        progress.show();
         process.stdout.on("data", function(chunk) {
+          progress.update(chunk);
           console.log(chunk);
+        }).on("end", function() {
+          progress.hide();
         });
       });
     }
 
-    var fastDialog = new Dialog("fastDialog", main.consumes, {
-      name: "create-a-fast-project",
-      allowClose: true,
-      title: "Create a FAST project",
-      elements: [
-        {
-          type: "button",
-          id: "cancel",
-          color: "grey",
-          caption: "Cancel",
-          hotkey: "ESC",
-          onclick: function(){ fastDialog.hide(); }
-        },
-        {
-          type: "button",
-          id: "ok",
-          color: "green",
-          caption: "OK",
-          default: true,
-          onclick: function(){
-            createFastProject(templateform.toJson());
-            fastDialog.hide();
-          }
-        }
-      ]
-    });
-
-    fastDialog.on("draw", function(e){
-      templateform.attachTo(e.html);
-    });
-
-    var functionform = new Form({
-      rowheight: 40,
-      colwidth: 100,
-      edge: "5 5 10 5",
-      form:[
-        {
-          title: "Package",
-          name: "package",
-          type: "textbox",
-          defaultValue: "fast.app"
-        },
-        {
-          title: "Function Name",
-          name: "name",
-          type: "textbox",
-          defaultValue: "MyFunction"
-        },
-      ]
-    });
+    function createFastProject(args){
+      mavenArchetypeGenerator(FAST_ARCHETYPE, {
+        artifactId: args.projectname,
+        version: args.version,
+        package: args.package,
+        classPrefix: args.classprefix
+      });
+    }
 
     function createFastFunction(args) {
       var content = "/*\n" +
@@ -272,37 +319,6 @@ define(function(require, exports, module) {
             "}";
       newFile(".java", content, getDirPath(), args.name);
     }
-
-    var functionDialog = new Dialog("functionDialog", main.consumes, {
-      name: "create-a-fast-funciton",
-      allowClose: true,
-      title: "Create a FAST Function",
-      elements: [
-        {
-          type: "button",
-          id: "cancel",
-          color: "grey",
-          caption: "Cancel",
-          hotkey: "ESC",
-          onclick: function(){ functionDialog.hide(); }
-        },
-        {
-          type: "button",
-          id: "ok",
-          color: "green",
-          caption: "OK",
-          default: true,
-          onclick: function(){
-            createFastFunction(functionform.toJson());
-            functionDialog.hide();
-          }
-        }
-      ]
-    });
-
-    functionDialog.on("draw", function(e) {
-      functionform.attachTo(e.html);
-    });
 
     function parse(data){
       var list = [];
@@ -347,6 +363,14 @@ define(function(require, exports, module) {
     }
 
     /***** Lifecycle *****/
+
+    fastDialog.on("draw", function(e){
+      templateform.attachTo(e.html);
+    });
+
+    functionDialog.on("draw", function(e) {
+      functionform.attachTo(e.html);
+    });
 
     plugin.on("load", function(){
       load();
@@ -397,12 +421,6 @@ define(function(require, exports, module) {
        * Sets the default extension for newly created files
        * @param extension  The default extension to use
        */
-
-      templateform: templateform,
-
-      fastDialog: fastDialog,
-
-
       set defaultExtension(extension) {
         defaultExtension = extension ? "." + extension : "";
         tree.defaultExtension = extension;

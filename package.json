@@ -17,7 +17,8 @@
     "url": "http://github.com/snlab/snlab.devopen.newresource.git"
   },
   "plugins": {
-    "newresource": {}
+    "newresource": {},
+    "progress": {}
   },
   "categories": [
     "miscellaneous"
