@@ -2,7 +2,7 @@ define(function(require, exports, module) {
   "use strict";
 
   main.consumes = [
-    "Plugin", "c9", "ui", "menus", "tabManager", "commands", "tree", "Form", "Dialog", "proc", "Divider", "dialog.alert", "dialog.progress"
+    "Plugin", "c9", "ui", "menus", "tabManager", "commands", "tree", "Form", "Dialog", "proc", "Divider", "dialog.alert", "dialog.progress", "settings"
   ];
   main.provides = ["newresource"];
   return main;
@@ -21,6 +21,7 @@ define(function(require, exports, module) {
     var Divider = imports.Divider;
     var alert = imports["dialog.alert"].show;
     var progress= imports["dialog.progress"];
+    var settings = imports.settings;
 
     /***** Constants *****/
     var FAST_ARCHETYPE = {
@@ -35,6 +36,8 @@ define(function(require, exports, module) {
 
     var readonly = c9.readonly;
     var defaultExtension = "";
+
+    var projects = [];
 
     var templateform = new Form({
       rowheight: 40,
@@ -79,7 +82,7 @@ define(function(require, exports, module) {
           color: "grey",
           caption: "Cancel",
           hotkey: "ESC",
-          onclick: function(){ fastDialog.hide(); }
+          onclick: function() { fastDialog.hide(); }
         },
         {
           type: "button",
@@ -87,9 +90,9 @@ define(function(require, exports, module) {
           color: "green",
           caption: "OK",
           default: true,
-          onclick: function(){
-            createFastProject(templateform.toJson());
+          onclick: function() {
             fastDialog.hide();
+            createFastProject(templateform.toJson());
           }
         }
       ]
@@ -135,8 +138,8 @@ define(function(require, exports, module) {
           caption: "OK",
           default: true,
           onclick: function(){
-            createFastFunction(functionform.toJson());
             functionDialog.hide();
+            createFastFunction(functionform.toJson());
           }
         }
       ]
@@ -194,6 +197,23 @@ define(function(require, exports, module) {
         command: "mapletemplate"
       }), 340, plugin);
 
+      // Context menu for tree
+      var itemCtxTreeNewFunction = new ui.item({
+        id: "itemCtxTreeNewFunction",
+        match: "file|folder|project",
+        caption: "New FAST Function",
+        isAvailable: function(){
+          // TODO: Check if selected a FAST project node
+          return tree.selectedNode && findFastProject(tree.selected);
+        },
+        onclick: function(){
+          functionDialog.show();
+        }
+      });
+      tree.getElement("mnuCtxTree", function(mnuCtxTree) {
+        ui.insertByIndex(mnuCtxTree, itemCtxTreeNewFunction, 1500, plugin);
+      });
+
       return loaded;
     }
 
@@ -217,7 +237,7 @@ define(function(require, exports, module) {
 
       var filePath;
       var name = name || "Untitled";
-      var count = 1;
+      var count = 0;
       type = type || "";
       path = path || getDirPath();
       var ext = defaultExtension;
@@ -243,6 +263,24 @@ define(function(require, exports, module) {
 
     function newFolder(path, callback) {
       tree.createFolder(path, false, callback || function(){});
+    }
+
+    function findFastProject(path) {
+      var projects = settings.getJson("project/devopen/projects");
+      for (var p in projects) {
+        if (projects[p].type === "FAST" &&
+            path.split('/')[1] === projects[p].name) {
+          return projects[p];
+        }
+      }
+      return false;
+    }
+
+    function updateProjectManager(args) {
+      // TODO: update project information in project manager
+      var projects = settings.getJson("project/devopen/projects") || {};
+      projects[args.path] = args;
+      settings.setJson("project/devopen/projects", projects);
     }
 
     function mavenArchetypeGenerator(archetype, args) {
@@ -275,23 +313,27 @@ define(function(require, exports, module) {
       });
     }
 
-    function createFastProject(args){
-      mavenArchetypeGenerator(FAST_ARCHETYPE, {
+    function createFastProject(form){
+      var args = {
         groupId: "fast.app",
-        artifactId: args.projectname,
-        version: args.version,
-        package: args.package,
-        classPrefix: args.classprefix,
-        copyright: "SNLab",
-        copyrightYear: "2016"
-      });
+        artifactId: form.projectname,
+        version: form.version,
+        package: form.package,
+        classPrefix: form.classprefix,
+        copyright: form.copyright || "SNLab",
+        copyrightYear: form.copyrightYear || "2016"
+      };
+      mavenArchetypeGenerator(FAST_ARCHETYPE, args);
+      args.type = "FAST";
+      args.name = form.projectname;
+      updateProjectManager(args);
     }
 
     function createFastFunction(args) {
       var content = require("text!./template/function.template")
             .replace(/\${copyrightYear}/g, args.copyrightYear || "2016")
             .replace(/\${copyright}/g, args.copyright || "SNLab")
-            .replace(/\${classPrefix}/g, args.name)
+            .replace(/\${name}/g, args.name)
             .replace(/\${package}/g, args.package);
       newFile(".java", content, getDirPath(), args.name);
     }
@@ -340,12 +382,23 @@ define(function(require, exports, module) {
 
     /***** Lifecycle *****/
 
+    settings.on("read", function() {
+      settings.setDefaults("project/devopen/projects", []);
+    });
+
     fastDialog.on("draw", function(e){
       templateform.attachTo(e.html);
     });
 
     functionDialog.on("draw", function(e) {
       functionform.attachTo(e.html);
+    });
+
+    functionDialog.on("show", function() {
+      var project = findFastProject(tree.selected);
+      // FIXME: The implementation is a little hack ;/
+      functionDialog.aml.$ext.childNodes[5].childNodes["0"].childNodes["0"].childNodes[1].childNodes[1].childNodes[1].childNodes[1].textContent = project.package;
+      functionDialog.aml.$ext.childNodes[5].childNodes["0"].childNodes["0"].childNodes[2].childNodes[1].childNodes[1].childNodes[1].textContent = project.name;
     });
 
     plugin.on("load", function(){

@@ -14,9 +14,9 @@ import fast.api.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ${classPrefix}Function implements Function {
+public class ${name} implements Function {
 
-    private static final Logger LOG = LoggerFactory.getLogger(${classPrefix}Function.class);
+    private static final Logger LOG = LoggerFactory.getLogger(${name}.class);
 
     private FastDataStore datastore = null;
 
@@ -28,6 +28,6 @@ public class ${classPrefix}Function implements Function {
         /*
          * Implement your control logic here.
          * */
-        LOG.info("${classPrefix}Function said, \"Hello world!\"");
+        LOG.info("${name} said, \"Hello world!\"");
     }
 }
