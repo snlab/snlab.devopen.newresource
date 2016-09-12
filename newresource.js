@@ -396,7 +396,7 @@ define(function(require, exports, module) {
 
     functionDialog.on("show", function() {
       var project = findFastProject(tree.selected);
-      // FIXME: The implementation is a little hack ;/
+      // HACK: The implementation is a little magic ;/
       functionDialog.aml.$ext.childNodes[5].childNodes["0"].childNodes["0"].childNodes[1].childNodes[1].childNodes[1].childNodes[1].textContent = project.package;
       functionDialog.aml.$ext.childNodes[5].childNodes["0"].childNodes["0"].childNodes[2].childNodes[1].childNodes[1].childNodes[1].textContent = project.name;
     });

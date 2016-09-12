@@ -24,7 +24,18 @@ define(function(require, exports, module) {
 
     function update(log) {
       logs.innerHTML += log;
-      logs.selectionStart = logs.selectionEnd = logs.value.length;
+      moveCaretToEnd(logs);
+    }
+
+    function moveCaretToEnd(el) {
+      if (typeof el.selectionStart == "number") {
+        el.selectionStart = el.selectionEnd = el.value.length;
+      } else if (typeof el.createTextRange != "undefined") {
+        el.focus();
+        var range = el.createTextRange();
+        range.collapse(false);
+        range.select();
+      }
     }
 
     /***** Lifecycle *****/
