@@ -179,23 +179,22 @@ define(function(require, exports, module) {
       menus.addItemByPath("File/New", new ui.item({
         disabled: readonly
       }), 200, plugin);
-      menus.addItemByPath("File/New/Empty FAST Project", new ui.item({
+      menus.addItemByPath("File/New/Empty FAST App Project", new ui.item({
         command: "fastproject"
       }), 210, plugin);
-      menus.addItemByPath("File/New/FAST Example Project", new ui.item({
+      menus.addItemByPath("File/New/FAST App Example", new ui.item({
         disabled: readonly
       }), 220, plugin);
-      menus.addItemByPath("File/New/~", new ui.divider(), 250, plugin);
-      menus.addItemByPath("File/New/FAST Function", new ui.item({
-        command: "fastfunction"
-      }), 260, plugin);
-      menus.addItemByPath("File/New/~", new ui.divider(), 320, plugin);
-      menus.addItemByPath("File/New/Empty Maple App", new ui.item({
+      menus.addItemByPath("File/New/Empty Maple App Project", new ui.item({
         disabled: readonly
-      }), 330, plugin);
-      menus.addItemByPath("File/New/Maple App from Template", new ui.item({
+      }), 230, plugin);
+      menus.addItemByPath("File/New/Maple App Example", new ui.item({
         command: "mapletemplate"
-      }), 340, plugin);
+      }), 240, plugin);
+      menus.addItemByPath("File/New/~", new ui.divider(), 300, plugin);
+      menus.addItemByPath("File/New/New FAST Function", new ui.item({
+        command: "fastfunction"
+      }), 310, plugin);
 
       // Context menu for tree
       var itemCtxTreeNewFunction = new ui.item({
