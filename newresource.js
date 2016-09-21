@@ -176,6 +176,18 @@ define(function(require, exports, module) {
         exec: function(){ functionDialog.show(); }
       }, plugin);
 
+      commands.addCommand({
+        name: "newtopology",
+        hint: "create a virtual topology for mininet with d3.js based editor",
+        exec: function(){ newFile(".topo2"); }
+      }, plugin);
+
+      commands.addCommand({
+        name: "newnexttopology",
+        hint: "create a virtual topology for mininet with NeXt editor",
+        exec: function(){ newFile(".topo"); }
+      }, plugin);
+
       menus.addItemByPath("File/New", new ui.item({
         disabled: readonly
       }), 200, plugin);
@@ -195,6 +207,13 @@ define(function(require, exports, module) {
       menus.addItemByPath("File/New/New FAST Function", new ui.item({
         command: "fastfunction"
       }), 310, plugin);
+      menus.addItemByPath("File/New/~", new ui.divider(), 400, plugin);
+      menus.addItemByPath("File/New/New Mininet Topology", new ui.item({
+        command: "newtopology"
+      }), 410, plugin);
+      menus.addItemByPath("File/New/New Mininet Topology (NeXt)", new ui.item({
+        command: "newnexttopology"
+      }), 410, plugin);
 
       // Context menu for tree
       var itemCtxTreeNewFunction = new ui.item({
