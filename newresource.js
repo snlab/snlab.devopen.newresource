@@ -244,16 +244,16 @@ define(function(require, exports, module) {
       menus.addItemByPath("File/New", new ui.item({
         disabled: readonly
       }), 200, plugin);
-      menus.addItemByPath("File/New/Empty Maple App Project", new ui.item({
+      menus.addItemByPath("File/New/Empty Maple App", new ui.item({
         disabled: true
       }), 210, plugin);
-      menus.addItemByPath("File/New/Maple App Example", new ui.item({
+      menus.addItemByPath("File/New/Maple App", new ui.item({
         command: "mapleapptemplate"
       }), 220, plugin);
       menus.addItemByPath("File/New/Empty FAST App Project", new ui.item({
         command: "fastproject"
       }), 230, plugin);
-      menus.addItemByPath("File/New/FAST App Example", new ui.item({
+      menus.addItemByPath("File/New/Sample FAST App", new ui.item({
         disabled: true
       }), 240, plugin);
       menus.addItemByPath("File/New/~", new ui.divider(), 300, plugin);
