@@ -22,6 +22,7 @@ define(function(require, exports, module) {
     var alert = imports["dialog.alert"].show;
     var progress= imports["dialog.progress"];
     var settings = imports.settings;
+    var join = require("path").join;
 
     /***** Constants *****/
     var FAST_ARCHETYPE = {
@@ -283,6 +284,31 @@ define(function(require, exports, module) {
       tree.getElement("mnuCtxTree", function(mnuCtxTree) {
         ui.insertByIndex(mnuCtxTree, itemCtxTreeNewFunction, 1500, plugin);
       });
+      var itemCtxTreeDeploy = new ui.item({
+        match: "folder",
+        caption: "Activate Project",
+        isAvailable: function() {
+          return tree.selectedNode && findFastProject(tree.selected) || findMapleProject(tree.selected);
+        },
+        onclick: function() {
+          var controller = settings.get("project/devopen/@default_controller");
+          if (controller) {
+            setActiveProject(controller,
+                             join(c9.workspaceDir, tree.selected));
+          }
+          else {
+            confirm("No default controller?",
+                    "No controller to deploy, you need to configure a default controller or add a new one.",
+                    "Would you like to go to controller panel?",
+                    function() {
+                      commands.exec("togglecontrollers");
+                    });
+          }
+        }
+      });
+      tree.getElement("mnuCtxTree", function(mnuCtxTree) {
+        ui.insertByIndex(mnuCtxTree, itemCtxTreeDeploy, 170, plugin);
+      });
 
       return loaded;
     }
@@ -346,10 +372,21 @@ define(function(require, exports, module) {
       return false;
     }
 
+    function findMapleProject(path) {
+      var projects = settings.getJson("project/devopen/projects");
+      for (var p in projects) {
+        if (projects[p].type === "MAPLE" &&
+            path.split('/')[1] === projects[p].name) {
+          return projects[p];
+        }
+      }
+      return false;
+    }
+
     function updateProjectManager(args) {
       // TODO: update project information in project manager
       var projects = settings.getJson("project/devopen/projects") || {};
-      projects[args.path] = args;
+      projects[args.name] = args;
       settings.setJson("project/devopen/projects", projects);
     }
 
@@ -420,6 +457,22 @@ define(function(require, exports, module) {
             .replace(/\${name}/g, args.name)
             .replace(/\${package}/g, args.package);
       newFile(".java", content, getDirPath(), args.name);
+    }
+
+    function setActiveProject(controller, path) {
+      var configs = settings.getJson("/project/run/configs") || {};
+      configs["default controller"] = {
+        command: [path,
+                  '-c', controller.ip,
+                  '-p', controller.sshPort,
+                  '-l', controller.login,
+                  '-P', controller.password].join(' '),
+        default: true,
+        name: "default controller",
+        runner: "devopen",
+        toolbar: true
+      };
+      settings.setJson("project/run/configs", configs);
     }
 
     function parse(data){
