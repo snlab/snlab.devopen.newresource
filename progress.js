@@ -17,7 +17,7 @@ define(function(require, exports, module) {
       name: "show-operation-progress",
       allowClose: false,
       modal: true,
-      title: "Maven Archetype Generating..."
+      title: "Creating the Maple App..."
     });
 
     /***** Methods *****/
