@@ -245,11 +245,8 @@ define(function(require, exports, module) {
         disabled: readonly
       }), 200, plugin);
       menus.addItemByPath("File/New/Empty Maple App", new ui.item({
-        disabled: true
-      }), 210, plugin);
-      menus.addItemByPath("File/New/Maple App", new ui.item({
         command: "mapleapptemplate"
-      }), 220, plugin);
+      }), 210, plugin);
       menus.addItemByPath("File/New/Empty FAST App Project", new ui.item({
         command: "fastproject"
       }), 230, plugin);
