@@ -160,7 +160,7 @@ define(function(require, exports, module) {
           title: "Maple App Name",
           name: "appname",
           type: "textbox",
-          defaultValue: "SimpleMapleApp"
+          defaultValue: "FASTMapleODL16"
         }
       ]
     });
