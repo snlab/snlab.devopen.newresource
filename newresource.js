@@ -29,6 +29,11 @@ define(function(require, exports, module) {
       artifactId: "fast-app-archetype",
       version: "1.0.0-SNAPSHOT"
     };
+    var MAPLE_ARCHETYPE = {
+      groupId: "org.opendaylight.maple",
+      artifactId: "maple-archetype",
+      version: "1.0.0-Beryllium-SR2"
+    };
 
     /***** Initialization *****/
 
@@ -145,6 +150,47 @@ define(function(require, exports, module) {
       ]
     });
 
+    var mapleform = new Form({
+      rowheight: 40,
+      colwidth: 100,
+      edge: "5 5 10 5",
+      form:[
+        {
+          title: "Maple App Name",
+          name: "appname",
+          type: "textbox",
+          defaultValue: "SimpleMapleApp"
+        }
+      ]
+    });
+
+    var mapleDialog = new Dialog("snlab.org", main.consumes, {
+      name: "create-a-maple-app",
+      allowClose: true,
+      title: "Create a Maple App",
+      elements: [
+        {
+          type: "button",
+          id: "cancel",
+          color: "grey",
+          caption: "Cancel",
+          hotkey: "ESC",
+          onclick: function() { mapleDialog.hide(); }
+        },
+        {
+          type: "button",
+          id: "ok",
+          color: "green",
+          caption: "OK",
+          default: true,
+          onclick: function() {
+            mapleDialog.hide();
+            createMapleApp(mapleform.toJson());
+          }
+        }
+      ]
+    });
+
     var loaded = false;
     function load(callback) {
       if (loaded) return false;
@@ -177,31 +223,37 @@ define(function(require, exports, module) {
       }, plugin);
 
       commands.addCommand({
-        name: "newtopology",
-        hint: "create a virtual topology for mininet with d3.js based editor",
-        exec: function(){ newFile(".topo2"); }
+        name: "mapleapptemplate",
+        hint: "create a Maple App with the template",
+        exec: function(){ mapleDialog.show(); }
       }, plugin);
 
       commands.addCommand({
-        name: "newnexttopology",
-        hint: "create a virtual topology for mininet with NeXt editor",
+        name: "newtopology",
+        hint: "create a virtual topology for mininet with d3.js based editor",
         exec: function(){ newFile(".topo"); }
       }, plugin);
+
+      // commands.addCommand({
+      //   name: "newnexttopology",
+      //   hint: "create a virtual topology for mininet with NeXt editor",
+      //   exec: function(){ newFile(".topo"); }
+      // }, plugin);
 
       menus.addItemByPath("File/New", new ui.item({
         disabled: readonly
       }), 200, plugin);
+      menus.addItemByPath("File/New/Empty Maple App Project", new ui.item({
+        disabled: true
+      }), 210, plugin);
+      menus.addItemByPath("File/New/Maple App Example", new ui.item({
+        command: "mapleapptemplate"
+      }), 220, plugin);
       menus.addItemByPath("File/New/Empty FAST App Project", new ui.item({
         command: "fastproject"
-      }), 210, plugin);
-      menus.addItemByPath("File/New/FAST App Example", new ui.item({
-        disabled: readonly
-      }), 220, plugin);
-      menus.addItemByPath("File/New/Empty Maple App Project", new ui.item({
-        disabled: readonly
       }), 230, plugin);
-      menus.addItemByPath("File/New/Maple App Example", new ui.item({
-        command: "mapletemplate"
+      menus.addItemByPath("File/New/FAST App Example", new ui.item({
+        disabled: true
       }), 240, plugin);
       menus.addItemByPath("File/New/~", new ui.divider(), 300, plugin);
       menus.addItemByPath("File/New/New FAST Function", new ui.item({
@@ -211,9 +263,9 @@ define(function(require, exports, module) {
       menus.addItemByPath("File/New/New Mininet Topology", new ui.item({
         command: "newtopology"
       }), 410, plugin);
-      menus.addItemByPath("File/New/New Mininet Topology (NeXt)", new ui.item({
-        command: "newnexttopology"
-      }), 410, plugin);
+      // menus.addItemByPath("File/New/New Mininet Topology (NeXt)", new ui.item({
+      //   command: "newnexttopology"
+      // }), 410, plugin);
 
       // Context menu for tree
       var itemCtxTreeNewFunction = new ui.item({
@@ -331,7 +383,7 @@ define(function(require, exports, module) {
       });
     }
 
-    function createFastProject(form){
+    function createFastProject(form) {
       var args = {
         groupId: "fast.app",
         artifactId: form.projectname,
@@ -344,6 +396,20 @@ define(function(require, exports, module) {
       mavenArchetypeGenerator(FAST_ARCHETYPE, args);
       args.type = "FAST";
       args.name = form.projectname;
+      updateProjectManager(args);
+    }
+
+    function createMapleApp(form) {
+      var args = {
+        groupId: "maple.app",
+        artifactId: form.appname,
+        classPrefix: form.appname,
+        copyright: form.copyright || "SNLab",
+        copyrightYear: form.copyrightYear || "2016"
+      };
+      mavenArchetypeGenerator(MAPLE_ARCHETYPE, args);
+      args.type = "MAPLE";
+      args.name = form.appname;
       updateProjectManager(args);
     }
 
@@ -417,6 +483,10 @@ define(function(require, exports, module) {
       // HACK: The implementation is a little magic ;/
       functionDialog.aml.$ext.childNodes[5].childNodes["0"].childNodes["0"].childNodes[1].childNodes[1].childNodes[1].childNodes[1].textContent = project.package;
       functionDialog.aml.$ext.childNodes[5].childNodes["0"].childNodes["0"].childNodes[2].childNodes[1].childNodes[1].childNodes[1].textContent = project.name;
+    });
+
+    mapleDialog.on("draw", function(e) {
+      mapleform.attachTo(e.html);
     });
 
     plugin.on("load", function(){
