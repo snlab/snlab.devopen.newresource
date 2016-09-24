@@ -436,7 +436,7 @@ define(function(require, exports, module) {
     function createMapleApp(form) {
       var args = {
         groupId: "org.opendaylight.mapleapp",
-        artifactId: "mapleapp",
+        artifactId: form.appname,
         classPrefix: form.appname,
         appName: form.appname,
         copyright: form.copyright || "SNLab",
