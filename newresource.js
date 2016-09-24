@@ -151,13 +151,54 @@ define(function(require, exports, module) {
       ]
     });
 
-    var mapleform = new Form({
+    var mapleappform = new Form({
       rowheight: 40,
-      colwidth: 100,
+      colwidth: 80,
       edge: "5 5 10 5",
       form:[
         {
           title: "Maple App Name",
+          name: "name",
+          type: "textbox",
+          defaultValue: "MyMapleApp"
+        },
+      ]
+    });
+
+    var mapleappDialog = new Dialog("snlab.org", main.consumes, {
+      name: "create-a-maple-app",
+      allowClose: true,
+      title: "Create a Maple App",
+      elements: [
+        {
+          type: "button",
+          id: "cancel",
+          color: "grey",
+          caption: "Cancel",
+          hotkey: "ESC",
+          onclick: function(){ mapleappDialog.hide(); }
+        },
+        {
+          type: "button",
+          id: "ok",
+          color: "green",
+          caption: "OK",
+          default: true,
+          onclick: function(){
+            mapleappDialog.hide();
+            createMapleApp(mapleappform.toJson());
+          }
+        }
+      ]
+    });
+
+    var mapleform = new Form({
+      rowheight: 40,
+      colwidth: 80,
+      edge: "5 5 10 5",
+      form:[
+        {
+          title: "Project Name",
           name: "appname",
           type: "textbox",
           defaultValue: "FASTMapleODL16"
@@ -166,9 +207,9 @@ define(function(require, exports, module) {
     });
 
     var mapleDialog = new Dialog("snlab.org", main.consumes, {
-      name: "create-a-maple-app",
+      name: "create-a-maple-app-project",
       allowClose: true,
-      title: "Create a Maple App",
+      title: "Create a Maple App Project",
       elements: [
         {
           type: "button",
@@ -186,7 +227,7 @@ define(function(require, exports, module) {
           default: true,
           onclick: function() {
             mapleDialog.hide();
-            createMapleApp(mapleform.toJson());
+            createMapleAppProject(mapleform.toJson());
           }
         }
       ]
@@ -224,13 +265,19 @@ define(function(require, exports, module) {
       }, plugin);
 
       commands.addCommand({
-        name: "mapleapptemplate",
-        hint: "create a Maple App with the template",
+        name: "mapleappproject",
+        hint: "create a Maple App Project with the template",
         exec: function(){ mapleDialog.show(); }
       }, plugin);
 
       commands.addCommand({
-        name: "newtopology",
+        name: "mapleapp",
+        hint: "create a Maple App class",
+        exec: function(){ mapleappDialog.show(); }
+      }, plugin);
+
+      commands.addCommand({
+        name: "mininettopology",
         hint: "create a virtual topology for mininet with d3.js based editor",
         exec: function(){ newFile(".topo"); }
       }, plugin);
@@ -244,8 +291,8 @@ define(function(require, exports, module) {
       menus.addItemByPath("File/New", new ui.item({
         disabled: readonly
       }), 200, plugin);
-      menus.addItemByPath("File/New/Empty Maple App", new ui.item({
-        command: "mapleapptemplate"
+      menus.addItemByPath("File/New/Maple App Project", new ui.item({
+        command: "mapleappproject"
       }), 210, plugin);
       menus.addItemByPath("File/New/Empty FAST App Project", new ui.item({
         command: "fastproject"
@@ -257,9 +304,12 @@ define(function(require, exports, module) {
       menus.addItemByPath("File/New/New FAST Function", new ui.item({
         command: "fastfunction"
       }), 310, plugin);
+      menus.addItemByPath("File/New/New Maple App", new ui.item({
+        command: "mapleapp"
+      }), 310, plugin);
       menus.addItemByPath("File/New/~", new ui.divider(), 400, plugin);
-      menus.addItemByPath("File/New/New Mininet Topology", new ui.item({
-        command: "newtopology"
+      menus.addItemByPath("File/New/Mininet Topology", new ui.item({
+        command: "mininettopology"
       }), 410, plugin);
       // menus.addItemByPath("File/New/New Mininet Topology (NeXt)", new ui.item({
       //   command: "newnexttopology"
@@ -271,7 +321,6 @@ define(function(require, exports, module) {
         match: "file|folder|project",
         caption: "New FAST Function",
         isAvailable: function(){
-          // TODO: Check if selected a FAST project node
           return tree.selectedNode && findFastProject(tree.selected);
         },
         onclick: function(){
@@ -280,6 +329,20 @@ define(function(require, exports, module) {
       });
       tree.getElement("mnuCtxTree", function(mnuCtxTree) {
         ui.insertByIndex(mnuCtxTree, itemCtxTreeNewFunction, 1500, plugin);
+      });
+      var itemCtxTreeNewMapleApp = new ui.item({
+        id: "itemCtxTreeNewMapleApp",
+        match: "file|folder|project",
+        caption: "New Maple App",
+        isAvailable: function(){
+          return tree.selectedNode && findMapleProject(tree.selected);
+        },
+        onclick: function(){
+          functionDialog.show();
+        }
+      });
+      tree.getElement("mnuCtxTree", function(mnuCtxTree) {
+        ui.insertByIndex(mnuCtxTree, itemCtxTreeNewMapleApp, 1400, plugin);
       });
       var itemCtxTreeDeploy = new ui.item({
         match: "folder",
@@ -433,7 +496,7 @@ define(function(require, exports, module) {
       updateProjectManager(args);
     }
 
-    function createMapleApp(form) {
+    function createMapleAppProject(form) {
       var args = {
         groupId: "org.opendaylight.mapleapp",
         artifactId: form.appname,
@@ -454,6 +517,14 @@ define(function(require, exports, module) {
             .replace(/\${copyright}/g, args.copyright || "SNLab")
             .replace(/\${name}/g, args.name)
             .replace(/\${package}/g, args.package);
+      newFile(".java", content, getDirPath(), args.name);
+    }
+
+    function createMapleApp(args) {
+      var content = require("text!./template/mapleapp.template")
+            .replace(/\${copyrightYear}/g, args.copyrightYear || "2016")
+            .replace(/\${copyright}/g, args.copyright || "SNLab")
+            .replace(/\${appName}/g, args.appName);
       newFile(".java", content, getDirPath(), args.name);
     }
 
@@ -538,6 +609,10 @@ define(function(require, exports, module) {
 
     mapleDialog.on("draw", function(e) {
       mapleform.attachTo(e.html);
+    });
+
+    mapleappDialog.on("draw", function(e) {
+      mapleappform.attachTo(e.html);
     });
 
     plugin.on("load", function(){
