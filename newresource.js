@@ -33,7 +33,7 @@ define(function(require, exports, module) {
     var MAPLE_ARCHETYPE = {
       groupId: "org.opendaylight.maple",
       artifactId: "maple-archetype",
-      version: "1.0.0-Beryllium-SR2"
+      version: "1.0.0-Beryllium-SR3"
     };
 
     /***** Initialization *****/
