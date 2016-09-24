@@ -153,7 +153,7 @@ define(function(require, exports, module) {
 
     var mapleappform = new Form({
       rowheight: 40,
-      colwidth: 80,
+      colwidth: 120,
       edge: "5 5 10 5",
       form:[
         {
@@ -194,7 +194,7 @@ define(function(require, exports, module) {
 
     var mapleform = new Form({
       rowheight: 40,
-      colwidth: 80,
+      colwidth: 100,
       edge: "5 5 10 5",
       form:[
         {
@@ -291,20 +291,20 @@ define(function(require, exports, module) {
       menus.addItemByPath("File/New", new ui.item({
         disabled: readonly
       }), 200, plugin);
-      menus.addItemByPath("File/New/Maple App Project", new ui.item({
+      menus.addItemByPath("File/New/Maple Project", new ui.item({
         command: "mapleappproject"
       }), 210, plugin);
-      menus.addItemByPath("File/New/Empty FAST App Project", new ui.item({
+      menus.addItemByPath("File/New/FAST Project", new ui.item({
         command: "fastproject"
       }), 230, plugin);
-      menus.addItemByPath("File/New/Sample FAST App", new ui.item({
-        disabled: true
-      }), 240, plugin);
+      // menus.addItemByPath("File/New/Sample FAST App", new ui.item({
+      //   disabled: true
+      // }), 240, plugin);
       menus.addItemByPath("File/New/~", new ui.divider(), 300, plugin);
-      menus.addItemByPath("File/New/New FAST Function", new ui.item({
+      menus.addItemByPath("File/New/FAST Function", new ui.item({
         command: "fastfunction"
       }), 310, plugin);
-      menus.addItemByPath("File/New/New Maple App", new ui.item({
+      menus.addItemByPath("File/New/Maple App", new ui.item({
         command: "mapleapp"
       }), 310, plugin);
       menus.addItemByPath("File/New/~", new ui.divider(), 400, plugin);
@@ -338,7 +338,7 @@ define(function(require, exports, module) {
           return tree.selectedNode && findMapleProject(tree.selected);
         },
         onclick: function(){
-          functionDialog.show();
+          mapleappDialog.show();
         }
       });
       tree.getElement("mnuCtxTree", function(mnuCtxTree) {
