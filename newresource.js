@@ -2,7 +2,7 @@ define(function(require, exports, module) {
   "use strict";
 
   main.consumes = [
-    "Plugin", "c9", "ui", "menus", "tabManager", "commands", "tree", "Form", "Dialog", "proc", "Divider", "dialog.alert", "dialog.progress", "settings"
+    "Plugin", "c9", "fs", "fs.cache", "ui", "menus", "tabManager", "commands", "tree", "Form", "Dialog", "proc", "Divider", "dialog.confirm", "dialog.alert", "dialog.notification", "dialog.progress", "notification.bubble", "settings"
   ];
   main.provides = ["newresource"];
   return main;
@@ -10,6 +10,8 @@ define(function(require, exports, module) {
   function main(options, imports, register) {
     var Plugin = imports.Plugin;
     var c9 = imports.c9;
+    var fs = imports.fs;
+    var fsCache = imports["fs.cache"];
     var ui = imports.ui;
     var menus = imports.menus;
     var commands = imports.commands;
@@ -19,10 +21,14 @@ define(function(require, exports, module) {
     var Dialog = imports.Dialog;
     var proc = imports.proc;
     var Divider = imports.Divider;
+    var confirm = imports["dialog.confirm"].show;
     var alert = imports["dialog.alert"].show;
+    var notify = imports["dialog.notification"].show;
+    var bubble = imports["notification.bubble"].popup;
     var progress= imports["dialog.progress"];
     var settings = imports.settings;
     var join = require("path").join;
+    var dirname = require("path").dirname;
 
     /***** Constants *****/
     var FAST_ARCHETYPE = {
@@ -352,9 +358,15 @@ define(function(require, exports, module) {
         },
         onclick: function() {
           var controller = settings.get("project/devopen/@default_controller");
+          var project = findFastProject(tree.selected) || findMapleProject(tree.selected);
+          if (!project) {
+            alert("Unsupported project type.");
+          }
           if (controller) {
             setActiveProject(controller,
-                             join(c9.workspaceDir, tree.selected));
+                             join(c9.workspaceDir, project.name));
+            // bubble("<div style='background: orange; color: white;'>" + project.name + " has been activated, you can run it now.</div>", true);
+            bubble(project.name + " has been activated, you can run it now.", true);
           }
           else {
             confirm("No default controller?",
@@ -419,6 +431,38 @@ define(function(require, exports, module) {
 
     function newFolder(path, callback) {
       tree.createFolder(path, false, callback || function(){});
+    }
+
+    function createFile(filename, content, callback) {
+      var node = tree.getSelectedFolder();
+      if (!node)
+        return callback(new Error("Tree has no nodes"));
+
+      var path = (node.path
+                  + "/" + (filename || "Untitled" + defaultExtension)).replace(/\/\//g, "/");
+
+      function tryPath(path) {
+        fs.exists(path, function(exists) {
+          var newpath = path;
+
+          if (!exists) {
+            fs.writeFile(newpath, content, function(err, data) {
+              if (err)
+                return callback(err);
+
+              var node = fsCache.findNode(newpath, "expand");
+              tree.expandAndSelect(node);
+
+              callback(err, data);
+            });
+          }
+          var node = fsCache.findNode(newpath, "expand");
+          if (node)
+            tree.expandAndSelect(node);
+        });
+      }
+
+      tree.expand(dirname(path), function(){ tryPath(path); });
     }
 
     function findFastProject(path) {
@@ -517,15 +561,19 @@ define(function(require, exports, module) {
             .replace(/\${copyright}/g, args.copyright || "SNLab")
             .replace(/\${name}/g, args.name)
             .replace(/\${package}/g, args.package);
-      newFile(".java", content, getDirPath(), args.name);
+      createFile(args.name + ".java", content, function(err) {
+        if (!err) tree.openSelection();
+      });
     }
 
     function createMapleApp(args) {
       var content = require("text!./template/mapleapp.template")
-            .replace(/\${copyrightYear}/g, args.copyrightYear || "2016")
-            .replace(/\${copyright}/g, args.copyright || "SNLab")
-            .replace(/\${appName}/g, args.appName);
-      newFile(".java", content, getDirPath(), args.name);
+            .replace(/\${copyrightYear}/g, "2016")
+            .replace(/\${copyright}/g, "SNLab")
+            .replace(/\${appName}/g, args.name);
+      createFile(args.name + ".java", content, function(err) {
+        if (!err) tree.openSelection();
+      });
     }
 
     function setActiveProject(controller, path) {
