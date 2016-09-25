@@ -531,7 +531,7 @@ define(function(require, exports, module) {
     function setActiveProject(controller, path) {
       var configs = settings.getJson("/project/run/configs") || {};
       configs["default controller"] = {
-        command: [path,
+        command: [path, '-f',
                   '-c', controller.ip,
                   '-p', controller.sshPort,
                   '-l', controller.login,
