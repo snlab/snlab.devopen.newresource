@@ -352,7 +352,7 @@ define(function(require, exports, module) {
       });
       var itemCtxTreeDeploy = new ui.item({
         match: "folder",
-        caption: "Activate Project",
+        caption: "Set as Active",
         isAvailable: function() {
           return tree.selectedNode && findFastProject(tree.selected) || findMapleProject(tree.selected);
         },
@@ -366,7 +366,7 @@ define(function(require, exports, module) {
             setActiveProject(controller,
                              join(c9.workspaceDir, project.name));
             // bubble("<div style='background: orange; color: white;'>" + project.name + " has been activated, you can run it now.</div>", true);
-            bubble(project.name + " has been activated, you can run it now.", true);
+            bubble(project.name + " has been set as active, you can run it now.", true);
           }
           else {
             confirm("No default controller?",
