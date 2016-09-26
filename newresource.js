@@ -57,11 +57,17 @@ define(function(require, exports, module) {
       edge: "5 5 10 5",
       form:[
         {
-          title: "Project name",
-          name: "projectname",
+          title: "Group ID",
+          name: "groupId",
           type: "textbox",
-          defaultValue: "simple-test"
+          defaultValue: "fast.tutorial"
         },
+				{
+					title: "Artifact ID",
+					name: "artifactId",
+          type: "textbox",
+          defaultValue: "fast-app-helloworld"
+				},
         {
           title: "Version",
           name: "version",
@@ -69,16 +75,10 @@ define(function(require, exports, module) {
           defaultValue: "1.0.0-SNAPSHOT"
         },
         {
-          title: "Package",
-          name: "package",
-          type: "textbox",
-          defaultValue: "fast.simple.test"
-        },
-        {
           title: "Class prefix",
-          name: "classprefix",
+          name: "classPrefix",
           type: "textbox",
-          defaultValue: "FastSimpleTest"
+          defaultValue: "HelloWorld"
         }
       ]
     });
@@ -526,17 +526,18 @@ define(function(require, exports, module) {
 
     function createFastProject(form) {
       var args = {
-        groupId: "fast.app",
-        artifactId: form.projectname,
+        groupId: form.groupId,
+        artifactId: form.artifactId,
         version: form.version,
-        package: form.package,
-        classPrefix: form.classprefix,
+        package: form.artifactId.split("-").join("."),
+        classPrefix: form.classPrefix,
         copyright: form.copyright || "SNLab",
-        copyrightYear: form.copyrightYear || "2016"
+        copyrightYear: form.copyrightYear || "2016",
+			  artifactIdInPathFormat: form.artifactId.split("-").join("/")
       };
       mavenArchetypeGenerator(FAST_ARCHETYPE, args);
       args.type = "FAST";
-      args.name = form.projectname;
+      args.name = form.artifactId;
       updateProjectManager(args);
     }
 
